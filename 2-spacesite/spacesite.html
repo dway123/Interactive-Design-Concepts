@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>walled in</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas" width="800" height="600" tabindex = "1"></canvas>
+
+<script>
+	//utility functions
+	function getRandomInt(min, max) {
+	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+	//credit: https://www.paulirish.com/2009/random-hex-color-code-snippets/
+	function getRandomColor(){
+		return '#'+Math.floor(Math.random()*16777215).toString(16);
+	}
+
+	//canvas initializations 
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	ctx.canvas.width  = window.innerWidth;
+  	ctx.canvas.height = window.innerHeight;
+
+  	//sound initializations
+  	var audioctx = new (window.AudioContext || window.webkitAudioContext)();
+
+	//overall initializations
+	var wallbounce = .5;
+	var d2x = .5
+
+	//self initializations
+	var self = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 10, color: getRandomColor(), status: 1};
+
+	//initializations for others
+	var others = [];
+
+	//http://stackoverflow.com/questions/6343450/generating-sound-on-the-fly-with-javascript-html5
+	function getSound(){
+		var osc = audioctx.createOscillator();
+		osc.type = 'sine';
+		osc.frequency.value = 440;
+		osc.connect(audioctx.destination);
+		return osc;
+	}
+
+	function addOther(){
+		others.push({x: getRandomInt(0,canvas.width), y: getRandomInt(0,canvas.height), dx: getRandomInt(-1,1), dy: getRandomInt(-1,1), ballRadius: getRandomInt(4,7), color: getRandomColor(), osc: getSound(), status: 1});
+	}
+
+	//listener initializations
+	var rightPressed = false;
+	var leftPressed = false;
+	var upPressed = false;
+	var downPressed = false;
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+	document.addEventListener("mousemove", mouseMoveHandler, false);
+
+	//handler functions
+	function keyDownHandler(e) {
+	    if(e.keyCode == 37){
+	        leftPressed = true;
+	    }
+	    else if(e.keyCode == 38){
+	    	upPressed = true;
+	    }
+	    else if(e.keyCode == 39){
+	        rightPressed = true;
+	    }
+	    else if(e.keyCode == 40){
+	    	downPressed = true;
+	    } 
+	}
+	function keyUpHandler(e) {
+		if(e.keyCode == 37){
+	        leftPressed = false;
+	    }
+	    else if(e.keyCode == 38){
+	    	upPressed = false;
+	    }
+	    else if(e.keyCode == 39){
+	        rightPressed = false;
+	    }
+	    else if(e.keyCode == 40){
+	    	downPressed = false;
+	    } 
+	}
+
+	function mouseMoveHandler(e) {
+	    var relativeX = e.clientX - canvas.offsetLeft;
+	    var relativeY = e.clientY - canvas.offsetTop;
+	    if(relativeX > 0 && relativeX < canvas.width){
+	        selfX = relativeX;
+	    }
+	    if(relativeY > 0 && relativeY < canvas.length){
+	    	selfY = relativeY;
+	    }
+	}
+
+	//draw functions
+	function drawSelf(){
+		ctx.beginPath();
+	    ctx.arc(self.x, self.y, self.ballRadius, 0, Math.PI*2);
+	    ctx.fillStyle = self.color;
+	    ctx.fill();
+	    ctx.closePath();
+	}
+
+	function drawOthers() {
+		for(i = 0; i < others.length; i++){
+			ctx.beginPath();
+		    ctx.arc(others[i].x, others[i].y, others[i].ballRadius, 0, Math.PI*2);
+		    ctx.fillStyle = others[i].color;
+		    ctx.fill();
+		    ctx.closePath();
+		}
+	}
+
+	//move functions
+	function onSelfBounce(){
+		addOther();
+		self.ballRadius/=2;
+	}
+
+	function onOtherBounce(){
+		self.ballRadius++;
+	}
+
+	function moveSelf(){
+		//check keyboard
+		if(rightPressed) {
+	        self.dx += d2x;
+	    }
+	    else if(leftPressed) {
+	        self.dx -= d2x;
+	    }
+	    else if(upPressed){
+	    	self.dy -= d2x;
+	    }
+	    else if(downPressed){
+	    	self.dy += d2x;
+	    }
+
+	    //adjust location via speed
+		if(self.x + self.dx > canvas.width-self.ballRadius || self.x + self.dx < self.ballRadius) {
+	        self.dx = -self.dx * wallbounce;
+	        onSelfBounce();
+	    }
+	    if(self.y + self.dy > canvas.height-self.ballRadius || self.y + self.dy < self.ballRadius) {
+	        self.dy = -self.dy * wallbounce;
+	        onSelfBounce();
+	    }
+	    self.x += Math.floor(self.dx);
+	    self.y += Math.floor(self.dy);
+
+	}
+
+	function moveOthers(){
+		for(i = 0; i < others.length; i++){
+			others[i].dx += getRandomInt(-1,1);
+			others[i].dy += getRandomInt(-1,1);
+			if(others[i].x + others[i].dx > canvas.width-others[i].ballRadius || others[i].x + others[i].dx < others[i].ballRadius) {
+		        others[i].dx = -others[i].dx * wallbounce;
+		        onOtherBounce();
+		    }
+		    if(others[i].y + others[i].dy > canvas.height-others[i].ballRadius || others[i].y + others[i].dy < others[i].ballRadius) {
+		        others[i].dy = -others[i].dy * wallbounce;
+		        onOtherBounce();
+		    }
+		    others[i].x += others[i].dx;
+		    others[i].y += others[i].dy;
+		}
+	}
+
+	//main function
+	function draw(){
+		ctx.canvas.width  = window.innerWidth;
+  		ctx.canvas.height = window.innerHeight;
+	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+	    
+	    drawSelf();
+	    drawOthers();
+	    
+	    moveSelf();
+	    moveOthers();
+	    
+	    requestAnimationFrame(draw);
+	}	
+	draw();
+
+</script>
+
+</body>
+</html>
