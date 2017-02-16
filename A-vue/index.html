@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<script src = "https://unpkg.com/vue/dist/vue.js"></script>
+
+	<style>
+	body{
+		margin:0;
+		background-color: tomato;
+	}
+	</style>
+	</head>
+	<body>
+	<div id = "app">
+		<input type = "text" v-model="newToDo" />
+		<button v-on:click = "createNewToDo">Add todo </button>
+		{{message}}
+		<ol>
+			<todo-item>
+			v-for="item in todos"
+			:todo = "item"></todo-item>
+		</ol>
+	</div>
+
+	<script>
+		Vue.component('todo-item', {
+			template: '<li>{{todo}}</li>',
+			props: ['todo']
+		});
+		let app = new Vue({
+			el: '#app',			
+			data: {
+				todos:[],
+				message: "TO-DO LIST",
+				newToDo: ''
+			},
+			methods: {
+				createNewToDo: function() {
+					if(this.newToDo){
+						this.todos.push(this.newToDo);
+						this.newToDo = '';
+					}
+				}
+			}
+		});
+
+		
+
+	</script>
+	</body>
+</html>

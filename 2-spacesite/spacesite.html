@@ -12,7 +12,27 @@
 
 <canvas id="canvas" width="800" height="600" tabindex = "1"></canvas>
 
+<script src="Beep.js" type="text/javascript"></script>
 <script>
+	//sound setup (see Beep.js)
+	//create tones
+	var lowbeep = new Beep(1046.00, audiocontext);
+	var beeps =
+	[
+		// new Beep(130.81),
+		// new Beep(164.81),
+		// new Beep(196.00),
+		new Beep(261.63),
+		new Beep(329.63),
+		new Beep(392.00),
+		new Beep(523.25),
+		new Beep(659.25),
+		new Beep(783.99)
+		// new Beep(1046.50),
+		// new Beep(1318.51),
+		// new Beep(1567.98)
+	];
+
 	//utility functions
 	function getRandomInt(min, max) {
 	    return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -25,34 +45,22 @@
 
 	//canvas initializations 
 	var canvas = document.getElementById("canvas");
-	var ctx = canvas.getContext("2d");
-	ctx.canvas.width  = window.innerWidth;
-  	ctx.canvas.height = window.innerHeight;
-
-  	//sound initializations
-  	var audioctx = new (window.AudioContext || window.webkitAudioContext)();
+	var context = canvas.getContext("2d");
+	context.canvas.width  = window.innerWidth;
+  	context.canvas.height = window.innerHeight;
 
 	//overall initializations
 	var wallbounce = .5;
 	var d2x = .5
 
-	//self initializations
-	var self = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 10, color: getRandomColor(), status: 1};
+	//player initializations
+	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 10, color: getRandomColor(), status: 1};
 
 	//initializations for others
 	var others = [];
 
-	//http://stackoverflow.com/questions/6343450/generating-sound-on-the-fly-with-javascript-html5
-	function getSound(){
-		var osc = audioctx.createOscillator();
-		osc.type = 'sine';
-		osc.frequency.value = 440;
-		osc.connect(audioctx.destination);
-		return osc;
-	}
-
 	function addOther(){
-		others.push({x: getRandomInt(0,canvas.width), y: getRandomInt(0,canvas.height), dx: getRandomInt(-1,1), dy: getRandomInt(-1,1), ballRadius: getRandomInt(4,7), color: getRandomColor(), osc: getSound(), status: 1});
+		others.push({x: getRandomInt(0,canvas.width), y: getRandomInt(0,canvas.height), dx: getRandomInt(-10,10), dy: getRandomInt(-10,10), ballRadius: getRandomInt(4,7), color: getRandomColor(), status: 1});
 	}
 
 	//listener initializations
@@ -60,6 +68,7 @@
 	var leftPressed = false;
 	var upPressed = false;
 	var downPressed = false;
+	var ctrlPressed = false;
 
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
@@ -79,6 +88,9 @@
 	    else if(e.keyCode == 40){
 	    	downPressed = true;
 	    } 
+	    else if(e.keyCode == 17){
+	    	ctrlPressed = true;
+	    }
 	}
 	function keyUpHandler(e) {
 		if(e.keyCode == 37){
@@ -93,74 +105,89 @@
 	    else if(e.keyCode == 40){
 	    	downPressed = false;
 	    } 
+	    else if(e.keyCode = 17){
+	    	ctrlPressed = false;
+	    }
 	}
 
 	function mouseMoveHandler(e) {
+		if(!ctrlPressed){return;}
 	    var relativeX = e.clientX - canvas.offsetLeft;
 	    var relativeY = e.clientY - canvas.offsetTop;
 	    if(relativeX > 0 && relativeX < canvas.width){
-	        selfX = relativeX;
+	        player.x = relativeX;
+	        player.dx = 0;
 	    }
-	    if(relativeY > 0 && relativeY < canvas.length){
-	    	selfY = relativeY;
+	    if(relativeY > 0 && relativeY < canvas.height){
+	    	player.y = relativeY;
+	    	player.dy = 0;
 	    }
 	}
 
 	//draw functions
-	function drawSelf(){
-		ctx.beginPath();
-	    ctx.arc(self.x, self.y, self.ballRadius, 0, Math.PI*2);
-	    ctx.fillStyle = self.color;
-	    ctx.fill();
-	    ctx.closePath();
+	function drawPlayer(){
+		context.beginPath();
+	    context.arc(player.x, player.y, player.ballRadius, 0, Math.PI*2);
+	    context.fillStyle = player.color;
+	    context.fill();
+	    context.closePath();
 	}
 
 	function drawOthers() {
 		for(i = 0; i < others.length; i++){
-			ctx.beginPath();
-		    ctx.arc(others[i].x, others[i].y, others[i].ballRadius, 0, Math.PI*2);
-		    ctx.fillStyle = others[i].color;
-		    ctx.fill();
-		    ctx.closePath();
+			context.beginPath();
+		    context.arc(others[i].x, others[i].y, others[i].ballRadius, 0, Math.PI*2);
+		    context.fillStyle = others[i].color;
+		    context.fill();
+		    context.closePath();
 		}
 	}
 
 	//move functions
-	function onSelfBounce(){
+	function onPlayerBounce(){
 		addOther();
-		self.ballRadius/=2;
+		player.ballRadius = Math.max(player.ballRadius/2, others.length);
+		var range = Math.log(player.ballRadius)*2;
+		for(var i = 0; i < others.length; i++){
+			others[i].dx += getRandomInt(-range, range);
+			others[i].dy += getRandomInt(-range, range);
+		}
+		lowbeep.beep();	//TODO: CHANGE IMPLEMENTATION
 	}
 
+	var beepindex = 0;
 	function onOtherBounce(){
-		self.ballRadius++;
+		player.ballRadius++;
+		beeps[beepindex].beep();	//TODO: CHANGE IMPLEMENTATION
+		beepindex = (beepindex + 1) % beeps.length;
 	}
 
-	function moveSelf(){
+	function movePlayer(){
 		//check keyboard
 		if(rightPressed) {
-	        self.dx += d2x;
+	        player.dx += d2x;
 	    }
 	    else if(leftPressed) {
-	        self.dx -= d2x;
+	        player.dx -= d2x;
 	    }
 	    else if(upPressed){
-	    	self.dy -= d2x;
+	    	player.dy -= d2x;
 	    }
 	    else if(downPressed){
-	    	self.dy += d2x;
+	    	player.dy += d2x;
 	    }
 
 	    //adjust location via speed
-		if(self.x + self.dx > canvas.width-self.ballRadius || self.x + self.dx < self.ballRadius) {
-	        self.dx = -self.dx * wallbounce;
-	        onSelfBounce();
+		if(player.x + player.dx > canvas.width-player.ballRadius || player.x + player.dx < player.ballRadius) {
+	        player.dx = -player.dx * wallbounce;
+	        onPlayerBounce();
 	    }
-	    if(self.y + self.dy > canvas.height-self.ballRadius || self.y + self.dy < self.ballRadius) {
-	        self.dy = -self.dy * wallbounce;
-	        onSelfBounce();
+	    if(player.y + player.dy > canvas.height-player.ballRadius || player.y + player.dy < player.ballRadius) {
+	        player.dy = -player.dy * wallbounce;
+	        onPlayerBounce();
 	    }
-	    self.x += Math.floor(self.dx);
-	    self.y += Math.floor(self.dy);
+	    player.x += Math.floor(player.dx);
+	    player.y += Math.floor(player.dy);
 
 	}
 
@@ -183,14 +210,14 @@
 
 	//main function
 	function draw(){
-		ctx.canvas.width  = window.innerWidth;
-  		ctx.canvas.height = window.innerHeight;
-	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+		context.canvas.width  = window.innerWidth;
+  		context.canvas.height = window.innerHeight;
+	    context.clearRect(0, 0, canvas.width, canvas.height);
 	    
-	    drawSelf();
+	    drawPlayer();
 	    drawOthers();
 	    
-	    moveSelf();
+	    movePlayer();
 	    moveOthers();
 	    
 	    requestAnimationFrame(draw);
