@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>walled in</title>
+    <title>balls</title>
     <style>
     	* { padding: 0; margin: 0; }
     	canvas { background: #eee; display: block; margin: 0 auto; }
@@ -13,25 +13,26 @@
 <canvas id="canvas" width="800" height="600" tabindex = "1"></canvas>
 
 <script src="Beep.js" type="text/javascript"></script>
+<script src="keyboardListeners.js" type="text/javascript"></script>
 <script>
-	//sound setup (see Beep.js)
-	//create tones
-	var lowbeep = new Beep(1046.00, audiocontext);
-	var beeps =
-	[
-		// new Beep(130.81),
-		// new Beep(164.81),
-		// new Beep(196.00),
-		new Beep(261.63),
-		new Beep(329.63),
-		new Beep(392.00),
-		new Beep(523.25),
-		new Beep(659.25),
-		new Beep(783.99)
-		// new Beep(1046.50),
-		// new Beep(1318.51),
-		// new Beep(1567.98)
-	];
+	//sound setup
+	var beeps = new Beeps();
+
+	document.addEventListener("mousemove", mouseMoveHandler, false);
+	//if ctrl is pressed, mouse locations will determine ball location
+	function mouseMoveHandler(e) {
+		if(!keyPressed.ctrl){return;}
+	    var relativeX = e.clientX - canvas.offsetLeft;
+	    var relativeY = e.clientY - canvas.offsetTop;
+	    if(relativeX > 0 && relativeX < canvas.width){
+	        player.x = relativeX;
+	        player.dx = 0;
+	    }
+	    if(relativeY > 0 && relativeY < canvas.height){
+	    	player.y = relativeY;
+	    	player.dy = 0;
+	    }
+	}
 
 	//utility functions
 	function getRandomInt(min, max) {
@@ -49,12 +50,14 @@
 	context.canvas.width  = window.innerWidth;
   	context.canvas.height = window.innerHeight;
 
+
 	//overall initializations
 	var wallbounce = .5;
 	var d2x = .5
 
 	//player initializations
 	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 10, color: getRandomColor(), status: 1};
+	var totalPlayerBounces = 0;
 
 	//initializations for others
 	var others = [];
@@ -63,69 +66,10 @@
 		others.push({x: getRandomInt(0,canvas.width), y: getRandomInt(0,canvas.height), dx: getRandomInt(-10,10), dy: getRandomInt(-10,10), ballRadius: getRandomInt(4,7), color: getRandomColor(), status: 1});
 	}
 
-	//listener initializations
-	var rightPressed = false;
-	var leftPressed = false;
-	var upPressed = false;
-	var downPressed = false;
-	var ctrlPressed = false;
-
-	document.addEventListener("keydown", keyDownHandler, false);
-	document.addEventListener("keyup", keyUpHandler, false);
-	document.addEventListener("mousemove", mouseMoveHandler, false);
-
-	//handler functions
-	function keyDownHandler(e) {
-	    if(e.keyCode == 37){
-	        leftPressed = true;
-	    }
-	    else if(e.keyCode == 38){
-	    	upPressed = true;
-	    }
-	    else if(e.keyCode == 39){
-	        rightPressed = true;
-	    }
-	    else if(e.keyCode == 40){
-	    	downPressed = true;
-	    } 
-	    else if(e.keyCode == 17){
-	    	ctrlPressed = true;
-	    }
-	}
-	function keyUpHandler(e) {
-		if(e.keyCode == 37){
-	        leftPressed = false;
-	    }
-	    else if(e.keyCode == 38){
-	    	upPressed = false;
-	    }
-	    else if(e.keyCode == 39){
-	        rightPressed = false;
-	    }
-	    else if(e.keyCode == 40){
-	    	downPressed = false;
-	    } 
-	    else if(e.keyCode = 17){
-	    	ctrlPressed = false;
-	    }
-	}
-
-	function mouseMoveHandler(e) {
-		if(!ctrlPressed){return;}
-	    var relativeX = e.clientX - canvas.offsetLeft;
-	    var relativeY = e.clientY - canvas.offsetTop;
-	    if(relativeX > 0 && relativeX < canvas.width){
-	        player.x = relativeX;
-	        player.dx = 0;
-	    }
-	    if(relativeY > 0 && relativeY < canvas.height){
-	    	player.y = relativeY;
-	    	player.dy = 0;
-	    }
-	}
+	var totalOtherBounces = 0;
 
 	//draw functions
-	function drawPlayer(){
+	function drawPlayers(){
 		context.beginPath();
 	    context.arc(player.x, player.y, player.ballRadius, 0, Math.PI*2);
 	    context.fillStyle = player.color;
@@ -143,6 +87,34 @@
 		}
 	}
 
+	function drawText(){
+		var fontsize = 20;
+		context.font = fontsize + "px Arial";
+		context.fillStyle = "gray";
+		context.textAlign = "center";
+
+		var text = "";
+
+		if(!totalPlayerBounces){												//before first bounce
+			context.fillText(" ^^ ", player.x, player.y);						//bunny ears look on player
+			text = "wasd or arrow keys to move, m to mute"
+			context.fillText(text, canvas.width/2, canvas.height - fontsize);	//keyboard controls shown
+		}
+		else{
+			if(others.length > 200 && player.ballRadius < canvas.height/2){
+				context.font = player.ballRadius + "px Arial";
+				context.fillText("FIN", canvas.width/2, canvas.height/2+player.ballRadius/2);
+
+			}
+			context.font = Math.min(player.ballRadius, fontsize) + "px Arial";
+			context.fillText(Math.floor(player.ballRadius), player.x, player.y+Math.min(player.ballRadius, fontsize)/2-1);
+			context.font = fontsize + "px Arial";
+			text = "We have bounced " + (totalPlayerBounces + totalOtherBounces) + " times, and there's " + (others.length + 1) + " balls";
+			context.fillText(text, canvas.width/2, canvas.height - fontsize);	//current game information shown
+		}
+				
+	}
+
 	//move functions
 	function onPlayerBounce(){
 		addOther();
@@ -152,28 +124,28 @@
 			others[i].dx += getRandomInt(-range, range);
 			others[i].dy += getRandomInt(-range, range);
 		}
-		lowbeep.beep();	//TODO: CHANGE IMPLEMENTATION
+		beeps.playTopNote();
+		totalPlayerBounces++;
 	}
 
-	var beepindex = 0;
 	function onOtherBounce(){
 		player.ballRadius++;
-		beeps[beepindex].beep();	//TODO: CHANGE IMPLEMENTATION
-		beepindex = (beepindex + 1) % beeps.length;
+		beeps.playNote();
+		totalOtherBounces++;
 	}
 
-	function movePlayer(){
+	function movePlayers(){
 		//check keyboard
-		if(rightPressed) {
+		if(keyPressed.right || keyPressed.d) {
 	        player.dx += d2x;
 	    }
-	    else if(leftPressed) {
+	    else if(keyPressed.left || keyPressed.a) {
 	        player.dx -= d2x;
 	    }
-	    else if(upPressed){
+	    else if(keyPressed.up || keyPressed.w){
 	    	player.dy -= d2x;
 	    }
-	    else if(downPressed){
+	    else if(keyPressed.down || keyPressed.s){
 	    	player.dy += d2x;
 	    }
 
@@ -211,16 +183,17 @@
 	//main function
 	function draw(){
 		context.canvas.width  = window.innerWidth;
-  		context.canvas.height = window.innerHeight;
-	    context.clearRect(0, 0, canvas.width, canvas.height);
-	    
-	    drawPlayer();
-	    drawOthers();
-	    
-	    movePlayer();
-	    moveOthers();
-	    
-	    requestAnimationFrame(draw);
+		context.canvas.height = window.innerHeight;
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		drawPlayers();
+		drawOthers();
+		drawText();
+
+		movePlayers();
+		moveOthers();
+
+		requestAnimationFrame(draw);
 	}	
 	draw();
 
