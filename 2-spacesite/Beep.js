@@ -12,8 +12,7 @@ frequencies: http://www.phy.mtu.edu/~suits/notefreqs.html
 //create sound context
 var audiocontext = new (window.AudioContext || window.webkitAudioContext)();	//for compatability across different browsers
 
-//TODO: create generalized "mix" node for clipping detection and fixingm
-//TODO: CONFIRM COMPRESSOR WORKS VIA SENDING PLAYER TO EDGE AND LISTENING TO LACK OF CLIPPING
+//TODO: CLIPPING DETECTION AND AVOIDANCE
 //https://www.html5rocks.com/en/tutorials/webaudio/games/
 var volume = 1;
 var muted = 0;
@@ -173,7 +172,6 @@ function Beeps()
 		this.topBeep.beep();
 		this.chordIndex = (this.chordIndex + 1) % this.beeps.length;
 	}
-
 }
 
 function mute(){

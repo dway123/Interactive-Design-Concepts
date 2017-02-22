@@ -1,5 +1,6 @@
 //not sure how code is meant to be isolated in javascript, so sorry for the bad isolation in my first js project...
 //NOTE: mute() function from Beep.js is here...
+//same with pause
 
 var keyPressed = {
 	left : false,
@@ -11,7 +12,8 @@ var keyPressed = {
 	s : false,
 	d : false,
 	ctrl : false,
-	m : false
+	m : false,
+	p: false
 };
 
 //initialize
@@ -50,6 +52,10 @@ function keyDownHandler(e){
     	keyPressed.m = true;
     	mute();
     } 
+    else if(e.keyCode == 80){
+    	keyPressed.p = true;
+    	pause();
+    }
 }
 
 function keyUpHandler(e){
@@ -82,5 +88,8 @@ function keyUpHandler(e){
 	}
 	else if(e.keyCode == 77){
     	keyPressed.m = false;
+    }
+    else if(e.keyCode == 80){
+    	keyPressed.p = false;
     }
 }
