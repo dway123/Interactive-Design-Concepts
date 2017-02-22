@@ -15,6 +15,12 @@
 <script src="Beep.js" type="text/javascript"></script>
 <script src="keyboardListeners.js" type="text/javascript"></script>
 <script>
+/*
+TODO:
+- ADD 2ND PLAYER
+- REDUCE VOLUME AS APPROACHING FIN
+*/
+
 	//sound setup
 	var beeps = new Beeps();
 
@@ -53,7 +59,8 @@
 
 	//overall initializations
 	var wallbounce = .5;
-	var d2x = .5
+	var d2x = .5;
+	var paused = 0;
 
 	//player initializations
 	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 10, color: getRandomColor(), status: 1};
@@ -97,7 +104,7 @@
 
 		if(!totalPlayerBounces){												//before first bounce
 			context.fillText(" ^^ ", player.x, player.y);						//bunny ears look on player
-			text = "wasd or arrow keys to move, m to mute"
+			text = "wasd or arrow keys to move, m to mute, p to pause"
 			context.fillText(text, canvas.width/2, canvas.height - fontsize);	//keyboard controls shown
 		}
 		else{
@@ -112,7 +119,10 @@
 			text = "We have bounced " + (totalPlayerBounces + totalOtherBounces) + " times, and there's " + (others.length + 1) + " balls";
 			context.fillText(text, canvas.width/2, canvas.height - fontsize);	//current game information shown
 		}
-				
+	}
+
+	function updateVolume(){
+		setVolume(Math.max(1 - others.length/200,0));
 	}
 
 	//move functions
@@ -180,6 +190,13 @@
 		}
 	}
 
+	function pause(){
+		paused = !paused;
+		if(!paused){
+			draw();
+		}
+	}
+
 	//main function
 	function draw(){
 		context.canvas.width  = window.innerWidth;
@@ -189,11 +206,14 @@
 		drawPlayers();
 		drawOthers();
 		drawText();
+		updateVolume();
 
 		movePlayers();
 		moveOthers();
 
-		requestAnimationFrame(draw);
+		if(!paused){
+			requestAnimationFrame(draw);
+		}
 	}	
 	draw();
 
