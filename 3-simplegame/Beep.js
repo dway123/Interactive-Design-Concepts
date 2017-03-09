@@ -15,12 +15,12 @@ var audiocontext = new (window.AudioContext || window.webkitAudioContext)();	//f
 //TODO: CLIPPING DETECTION AND AVOIDANCE
 //https://www.html5rocks.com/en/tutorials/webaudio/games/
 var volume = 1;
-var muted = 0;
+var muted = false;
 var mix = audiocontext.createGain();
 var compressor = audiocontext.createDynamicsCompressor();
 
-mix.connect(compressor);
-compressor.connect(audiocontext.destination);
+mix.connect(audiocontext.destination);
+//compressor.connect(audiocontext.destination);
 
 mix.gain.value = volume;
 
@@ -176,15 +176,15 @@ function Beeps()
 
 function mute(){
 	muted = !muted;
+}
+
+//TODO: stop making setVolume run every iteration...
+function setVolume(vol){
+	volume = vol;
 	if(muted){
 		mix.gain.value = 0;
 	}
 	else{
 		mix.gain.value = volume;
 	}
-}
-
-function setVolume(vol){
-	volume = vol;
-	mix.gain.value = volume;
 }
