@@ -44,7 +44,7 @@
 	var score = 0;
 
 	//player initializations
-	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, color: getRandomColor(), lives: 1};
+	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
 	var totalPlayerBounces = 0;
 
 	//initializations for others
@@ -90,9 +90,15 @@
 	function drawPlayers(){
 		context.beginPath();
 	    context.arc(player.x, player.y, player.ballRadius, 0, Math.PI*2);
-	    context.fillStyle = player.color;
+	    context.fillStyle = player.outerColor;
 	    context.fill();
 	    context.closePath();
+
+	    // context.beginPath();
+	    // context.arc(player.x, player.y, player.ballRadius/2, 0, Math.PI*2);
+	    // context.fillStyle = player.innerColor;
+	    // context.fill();
+	    // context.closePath();
 	}
 
 	function drawOthers(){

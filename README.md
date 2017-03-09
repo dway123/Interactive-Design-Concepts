@@ -1,7 +1,7 @@
 # FA-326 Interactive-Design-Concepts
-Learning how to do basic web development I guess... more will come in the future
+Learning how to do basic web development I guess... good times.
 
-Node.js setup: https://blog.risingstack.com/node-js-windows-10-tutorial/
-
-Node.js Hello World and assorted examples
-https://howtonode.org/hello-node
+Check out these fun experiences: 
+https://dway123.github.io/Interactive-Design-Concepts/1-beepsite/
+https://dway123.github.io/Interactive-Design-Concepts/2-spacesite/
+https://dway123.github.io/Interactive-Design-Concepts/3-simplegame/
