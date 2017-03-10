@@ -1,5 +1,5 @@
 	//sound setup
-	var beeps = new Beeps();
+	var sounds = new SoundManager();
 
 	//mouse listener setup
 	document.addEventListener("mousemove", mouseMoveHandler, false);
@@ -36,12 +36,16 @@
 
 	//overall initializations
 	var wallBounce = .5;
-	var paused = 0;
 	var dx = Math.min(canvas.height, canvas.width)/75;
 	var d2x = dx/20;
-	var time = 0;
-	var gameState = 0; //0 is menu, 1 is started, 2 is game 
-	var score = 0;
+
+	var system = {
+		gameState: 0,	//0 is menu, 1 is started, 2 is game 
+		time: 0,
+		paused: 0,
+		score: 0,
+		difficulty: 1
+	}
 
 	//player initializations
 	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
@@ -51,35 +55,36 @@
 	var others = [];
 	var currentWall = 0;
 	var initOtherBirthPeriod= 150;
-	var difficulty = 1;
 
 	function addOther(){
+		var mindx = 5;
+		var maxdx = 8;
 		var x, y, dx, dy;
-		var otherLifetime = Math.ceil(1.25 * difficulty * initOtherBirthPeriod);
+		var otherLifetime = Math.ceil(1.25 * system.difficulty * initOtherBirthPeriod);
 		var ballRadius = getRandomInt(canvas.height/200,canvas.height/100);
 		if(currentWall == 0){
 			x = 0 + 2 * ballRadius;
 			y = getRandomInt(0 + 2 * ballRadius, context.canvas.height - 2 * ballRadius);
-			dx = getRandomInt(5,10);
-			dy = getRandomInt(-10,10);
+			dx = getRandomInt(mindx,maxdx);
+			dy = getRandomInt(-maxdx,maxdx);
 		}
 		else if(currentWall == 1){
 			x = getRandomInt(0 + 2 * ballRadius, context.canvas.width - 2 * ballRadius);
 			y = 0 + ballRadius;
-			dx = getRandomInt(-10,10);
-			dy = getRandomInt(5,10);
+			dx = getRandomInt(-maxdx,maxdx);
+			dy = getRandomInt(mindx,maxdx);
 		}
 		else if(currentWall == 2){
 			x = canvas.width - 2 * ballRadius;
 			y = getRandomInt(0 + 2 * ballRadius, context.canvas.height - 2 * ballRadius);
-			dx = getRandomInt(-10,-5);
-			dy = getRandomInt(-10,10);
+			dx = getRandomInt(-maxdx,-mindx);
+			dy = getRandomInt(-maxdx,maxdx);
 		}
 		else if(currentWall == 3){
 			x = getRandomInt(0 + 2 * ballRadius, context.canvas.width - 2 * ballRadius);
 			y = canvas.height - 2 * ballRadius;
-			dx = getRandomInt(-10,10);
-			dy = getRandomInt(-10,-5);
+			dx = getRandomInt(-maxdx,maxdx);
+			dy = getRandomInt(-maxdx,-mindx);
 		}
 		others.push({x: x, y: y, dx: dx, dy: dy, ballRadius: ballRadius, color: getRandomColor(), lifetime: otherLifetime});
 	}
@@ -94,11 +99,11 @@
 	    context.fill();
 	    context.closePath();
 
-	    // context.beginPath();
-	    // context.arc(player.x, player.y, player.ballRadius/2, 0, Math.PI*2);
-	    // context.fillStyle = player.innerColor;
-	    // context.fill();
-	    // context.closePath();
+	    context.beginPath();
+	    context.arc(player.x, player.y, player.ballRadius/2, 0, Math.PI*2);
+	    context.fillStyle = player.innerColor;
+	    context.fill();
+	    context.closePath();
 	}
 
 	function drawOthers(){
@@ -112,9 +117,9 @@
 	}
 
 	function drawText(){
-		drawBottomText();
-		drawMiddleText();
 		drawTopText();
+		drawMiddleText();
+		drawBottomText();
 	}
 
 	function drawBottomText(){
@@ -124,14 +129,14 @@
 		context.textAlign = "center";
 		var text = "";
 
-		if(gameState == 0){
+		if(system.gameState == 0){
 			text = "wasd or arrow keys to move, m to mute, p to pause";
 		}
-		else if(gameState == 1 || gameState == 2){
-			text = "Score: " + score;
+		else if(system.gameState == 1 || system.gameState == 2){
+			text = "Score: " + system.score;
 		}
 		else{
-			text = "ERROR: unrecognized gameState = " + gameState;
+			text = "ERROR: unrecognized system.gameState = " + system.gameState;
 		}
 
 		context.fillText(text, canvas.width/2, canvas.height - fontsize);
@@ -143,18 +148,18 @@
 		context.fillStyle = "gray";
 		context.textAlign = "center";
 		var text = "";
-		if(paused){
+		if(system.paused){
 			text = "paused";
 		}
 		else{
-			if(gameState == 0 || gameState == 1){
+			if(system.gameState == 0 || system.gameState == 1){
 				return;
 			}
-			else if(gameState == 2){
+			else if(system.gameState == 2){
 				text = "GAME OVER";
 			}
 			else{
-				text = "ERROR: gameState not implemented!";
+				text = "ERROR: system.gameState not implemented!";
 			}
 		}
 		
@@ -168,41 +173,41 @@
 		context.textAlign = "center";
 		var text = "";
 
-		if(gameState == 0){
+		if(system.gameState == 0){
 			text = "Welcome! Please bounce against a wall to begin. :)";
 		}
-		else if(gameState == 1 || gameState == 2){
+		else if(system.gameState == 1 || system.gameState == 2){
 			return;
 		}
 		else{
-			text = "ERROR: gameState not implemented!";
+			text = "ERROR: system.gameState not implemented!";
 		}
 		context.fillText(text, canvas.width/2, 0 + fontsize);
-
 	}
 
 	function updateVolume(){
-		setVolume(Math.max(1 - others.length/150,0));
+		sounds.setVolume(Math.max(1 - others.length/150,0));
 	}
 
 	function updateScore(){
-		score = time;
+		system.score = system.time;
 	}
 
 	//move functions
 	function onPlayerBounce(){
 		addOther();
 		player.ballRadius = Math.max(player.ballRadius/2, others.length);
-		beeps.playTopNote();
+		sounds.beeps.playTopNote();
+		sounds.beeps.nextChord();
 		totalPlayerBounces++;
-		if(gameState == 0){
-			gameState = 1;
-		}
+		if(system.gameState == 0){
+			system.gameState = 1;
+		}		
 	}
 
 	function onOtherBounce(){
 		player.ballRadius++;
-		beeps.playNote();
+		sounds.beeps.playNote();
 		totalOtherBounces++;
 	}
 
@@ -210,14 +215,14 @@
 		//check keyboard
 		var dxtarget, dytarget;
 		if(keyPressed.right || keyPressed.d) {
-	        dxtarget = dx;
-	    }
-	    else if(keyPressed.left || keyPressed.a) {
-	        dxtarget = -dx;
-	    }
-	    else{
-	    	dxtarget = 0;
-	    }
+			dxtarget = dx;
+		}
+		else if(keyPressed.left || keyPressed.a) {
+			dxtarget = -dx;
+		}
+		else{
+			dxtarget = 0;
+		}
 	    if(keyPressed.up || keyPressed.w){
 	    	dytarget = -dx;
 	    }
@@ -291,15 +296,15 @@
 				player.lives--;
 				others.splice(i,1);
 				if(player.lives <= 0){
-					gameState = 2;
+					system.gameState = 2;
 				}
 			}
 		}
 	}
 
 	function pause(){
-		paused = !paused;
-		if(!paused){
+		system.paused = !system.paused;
+		if(!system.paused){
 			draw();
 		}
 	}
@@ -311,18 +316,19 @@
 		context.canvas.height = window.innerHeight;
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
-		//update things via time
-		time++;
-		if(gameState == 1){
-			
-			if(time % Math.ceil(initOtherBirthPeriod/difficulty) == 0){
+		//update things via system.time
+		system.time++;
+		//if(system.gameState == 1){
+			updateScore();
+			if(system.time % Math.ceil(initOtherBirthPeriod/system.difficulty) == 0){
 				addOther();
 				addOther();
 				addOther();
 				currentWall = (currentWall + 1) % 4;
-				difficulty*= 1.025;
+				system.difficulty*= 1.025;
+
 			}	
-		}		
+		//}		
 		
 		//state changes
 		playerOtherCollisionDetection();
@@ -332,14 +338,13 @@
 		moveOthers();
 
 		updateVolume();
-		if(gameState == 1){updateScore();}
 
 		//drawing objects
 		drawPlayers();
 		drawOthers();
 		drawText();
 
-		if(!paused){
+		if(!system.paused){
 			requestAnimationFrame(draw);
 		}
 	}
