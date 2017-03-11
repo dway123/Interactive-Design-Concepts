@@ -8,10 +8,11 @@ var game = new Game();
 
 function Game(){
 	//immutable game settings
-	const wallBounce = .5;										//velocity retained after bouncing from a wall
+	const wallBounce = .4;										//velocity retained after bouncing from a wall
 	const playerDx = Math.min(context.canvas.height, context.canvas.width)/75;
 	const playerD2x = playerDx/20;
 	const initOtherBirthPeriod= 150;
+	const startingLives = 1;
 
 	//changing game variables
 	var sounds = new SoundManager();
@@ -20,11 +21,17 @@ function Game(){
 			time: 0,
 			paused: 0,
 			score: 0,
+			difficulty: 1,
 			highScore: 0,
-			difficulty: 1
+			backgroundColor: 'white'
 		};
 	var player, others;
 	var currentWall;
+	var colorManager = {
+			colors: ['monochrome', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'], //color groups supported by randomColor.js 
+			index : 0,
+			playerColorIndex: 0
+		}
 
 	initialize = function(){
 		sounds.reset();
@@ -33,7 +40,20 @@ function Game(){
 		system.paused = 0;
 		system.score = 0;
 		system.difficulty = 1;
-		player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
+		colorManager.playerColorIndex = getRandomInt(0, colorManager.colors.length-1);
+		colorManager.index = getRandomInt(0, colorManager.colors.length-1);
+		
+		player = {
+			x: canvas.width/2, 
+			y: canvas.height/2, 
+			dx: 0, 
+			dy: 0, 
+			ballRadius: 20, 
+			innerColor: randomColor({hue: colorManager.colors[colorManager.playerColorIndex], luminosity: 'light'}), 
+			outerColor: randomColor({hue: colorManager.colors[colorManager.playerColorIndex], luminosity: 'dark'}), 
+			lives: startingLives
+		};
+
 		others = [];
 		currentWall = 0;
 	}
@@ -47,9 +67,8 @@ function Game(){
 	    return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
-	//credit: https://www.paulirish.com/2009/random-hex-color-code-snippets/
-	function getRandomColor(){
-		return '#'+Math.floor(Math.random()*16777215).toString(16);
+	function getNextColors(){
+		return randomColor({hue: colorManager.colors[colorManager.index]});
 	}
 
 	//mouse/keyboard listeners
@@ -178,11 +197,12 @@ function Game(){
 	}
 
 	function addOther(){
-		var mindx = 5;
-		var maxdx = 8;
 		var x, y, dx, dy;
 		var otherLifetime = Math.ceil(1.25 * system.difficulty * initOtherBirthPeriod);
-		var ballRadius = getRandomInt(canvas.height/200,canvas.height/100);
+		var ballRadius = getRandomInt(canvas.height/100,canvas.height/50);
+		var mindx = canvas.height/20/(ballRadius);
+		var maxdx = canvas.height/10/(ballRadius);
+		var lifetime = otherLifetime * ballRadius / (canvas.height/100);
 		if(currentWall == 0){
 			x = 0 + 2 * ballRadius;
 			y = getRandomInt(0 + 2 * ballRadius, context.canvas.height - 2 * ballRadius);
@@ -207,7 +227,7 @@ function Game(){
 			dx = getRandomInt(-maxdx,maxdx);
 			dy = getRandomInt(-maxdx,-mindx);
 		}
-		others.push({x: x, y: y, dx: dx, dy: dy, ballRadius: ballRadius, color: getRandomColor(), lifetime: otherLifetime});
+		others.push({x: x, y: y, dx: dx, dy: dy, ballRadius: ballRadius, color: getNextColors(), lifetime: lifetime});
 	}
 
 	//draw functions
@@ -334,7 +354,7 @@ function Game(){
 	}
 
 	function movePlayers(){
-		//check keyboard
+		//check keyboard, have player accelerate by less than or equal to playerD2x, until |player.dx| equals playerDx
 		var dxtarget, dytarget;
 		if(keyPressed.right || keyPressed.d) {
 			dxtarget = playerDx;
@@ -377,9 +397,8 @@ function Game(){
 	        player.dy = -player.dy * wallBounce;
 	        onPlayerBounce();
 	    }
-	    player.x += Math.floor(player.dx);
-	    player.y += Math.floor(player.dy);
-
+	    player.x += player.dx;
+	    player.y += player.dy;
 	}
 
 	function moveOthers(){
@@ -430,7 +449,8 @@ function Game(){
 		//responsive to window size changes
 		context.canvas.width  = window.innerWidth;
 		context.canvas.height = window.innerHeight;
-		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.fillStyle = system.backgroundColor;
+		context.fillRect(0, 0, canvas.width, canvas.height);
 
 		//update things via system.time
 		system.time++;
@@ -441,6 +461,7 @@ function Game(){
 				addOther();
 				addOther();
 				currentWall = (currentWall + 1) % 4;
+				colorManager.index = (colorManager.index + 1) % colorManager.colors.length;
 				system.difficulty*= 1.025;
 			}	
 		}		
