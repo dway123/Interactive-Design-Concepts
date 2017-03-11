@@ -4,6 +4,8 @@ var context = canvas.getContext("2d");
 context.canvas.width  = window.innerWidth;
 context.canvas.height = window.innerHeight;
 
+var game = new Game();
+
 function Game(){
 	//immutable game settings
 	const wallBounce = .5;										//velocity retained after bouncing from a wall
@@ -11,32 +13,33 @@ function Game(){
 	const playerD2x = playerDx/20;
 	const initOtherBirthPeriod= 150;
 
-	var sounds = new SoundManager();
-
 	//changing game variables
-	var others = [];
-	var highScore = 0;
-
-	var system;
-	var player;
-	var currentWall;
-
-	initialize = function(){
-		sounds.reset();
-		system = {
+	var sounds = new SoundManager();
+	var system = {
 			gameState: 0,	//0 is menu, 1 is started, 2 is game 
 			time: 0,
 			paused: 0,
 			score: 0,
+			highScore: 0,
 			difficulty: 1
-		}
+		};
+	var player, others;
+	var currentWall;
+
+	initialize = function(){
+		sounds.reset();
+		system.gameState = 0;	//0 is menu, 1 is started, 2 is game 
+		system.time = 0;
+		system.paused = 0;
+		system.score = 0;
+		system.difficulty = 1;
 		player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
+		others = [];
 		currentWall = 0;
-		draw();
 	}
 
 	this.getHighScore = function(){
-		return highScore;
+		return system.highScore;
 	}
 
 	//utility functions
@@ -103,7 +106,7 @@ function Game(){
 	    	keyPressed.p = true;
 	    	pause();
 	    }
-	    if(system.gameState == 2){
+	    else if(e.keyCode == 32){
 	    	initialize();
 	    }
 	}
@@ -162,6 +165,9 @@ function Game(){
 
 	function updateScore(){
 		system.score = system.time;
+		if(system.score > system.highScore){
+			system.highScore = system.score;
+		}
 	}
 
 	function pause(){
@@ -233,9 +239,10 @@ function Game(){
 		drawTopText();
 		drawMiddleText();
 		drawBottomText();
+		drawTopLeftText();
 	}
 
-	function fontSetup(fontSize = 20, font = "Arial", color = "gray", align = "center"){
+	function fontSetup(fontSize = 20, align = "center", font = "Arial", color = "gray"){
 		context.font = fontSize + "px " + font;
 		context.fillStyle = color;
 		context.textAlign = align;
@@ -292,12 +299,18 @@ function Game(){
 			return;
 		}
 		else if(system.gameState == 2){
-			text = "Please press any key to try again";
+			text = "Please press space to try again";
 		}
 		else{
 			text = "ERROR: unrecognized system.gameState = " + system.gameState;
 		}
 		context.fillText(text, canvas.width/2, 0 + fontSize);
+	}
+
+	function drawTopLeftText(){
+		var fontSize = 20;
+		fontSetup(fontSize = fontSize, align = "left");
+		context.fillText("High Score: " + system.highScore, fontSize/2, 0 + fontSize);
 	}
 
 	function updateVolume(){
@@ -414,7 +427,6 @@ function Game(){
 
 	//main function
 	function draw(){
-		console.log(playerD2x, playerDx, player.dx);
 		//responsive to window size changes
 		context.canvas.width  = window.innerWidth;
 		context.canvas.height = window.innerHeight;
@@ -430,7 +442,6 @@ function Game(){
 				addOther();
 				currentWall = (currentWall + 1) % 4;
 				system.difficulty*= 1.025;
-
 			}	
 		}		
 		
@@ -453,8 +464,5 @@ function Game(){
 		}
 	}
 	initialize();
+	draw();
 }
-
-
-// Game();
-var game = new Game();
