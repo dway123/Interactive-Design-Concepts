@@ -1,7 +1,149 @@
-	//sound setup
+//canvas initializations 
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+context.canvas.width  = window.innerWidth;
+context.canvas.height = window.innerHeight;
+
+function Game(){
+	//immutable game settings
+	const wallBounce = .5;										//velocity retained after bouncing from a wall
+	const playerDx = Math.min(context.canvas.height, context.canvas.width)/75;
+	const playerD2x = playerDx/20;
+	const initOtherBirthPeriod= 150;
+
 	var sounds = new SoundManager();
 
-	//mouse listener setup
+	//changing game variables
+	var others = [];
+	var highScore = 0;
+
+	var system;
+	var player;
+	var currentWall;
+
+	initialize = function(){
+		sounds.reset();
+		system = {
+			gameState: 0,	//0 is menu, 1 is started, 2 is game 
+			time: 0,
+			paused: 0,
+			score: 0,
+			difficulty: 1
+		}
+		player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
+		currentWall = 0;
+		draw();
+	}
+
+	this.getHighScore = function(){
+		return highScore;
+	}
+
+	//utility functions
+	function getRandomInt(min, max){
+	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+	//credit: https://www.paulirish.com/2009/random-hex-color-code-snippets/
+	function getRandomColor(){
+		return '#'+Math.floor(Math.random()*16777215).toString(16);
+	}
+
+	//mouse/keyboard listeners
+	var keyPressed = {
+		left : false,
+		up : false,
+		right : false,
+		down : false,
+		w : false,
+		a : false,
+		s : false,
+		d : false,
+		ctrl : false,
+		m : false,
+		p: false
+	};
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+
+	function keyDownHandler(e){
+		if(e.keyCode == 37){
+			keyPressed.left = true;
+		}
+		else if(e.keyCode == 38){
+			keyPressed.up = true;
+		}
+	    else if(e.keyCode == 39){
+	        keyPressed.right = true;
+	    }
+	    else if(e.keyCode == 40){
+	    	keyPressed.down = true;
+	    }
+	    else if(e.keyCode == 87){
+			keyPressed.w = true;
+		}
+		else if(e.keyCode == 65){
+			keyPressed.a = true;
+		}
+	    else if(e.keyCode == 83){
+	        keyPressed.s = true;
+	    }
+	    else if(e.keyCode == 68){
+	    	keyPressed.d = true;
+	    }  
+	    else if(e.keyCode == 17){
+	    	keyPressed.ctrl = true;
+		}
+		else if(e.keyCode == 77){
+	    	keyPressed.m = true;
+	    	sounds.mute();
+	    } 
+	    else if(e.keyCode == 80){
+	    	keyPressed.p = true;
+	    	pause();
+	    }
+	    if(system.gameState == 2){
+	    	initialize();
+	    }
+	}
+
+	function keyUpHandler(e){
+		if(e.keyCode == 37){
+			keyPressed.left = false;
+		}
+		else if(e.keyCode == 38){
+			keyPressed.up = false;
+		}
+	    else if(e.keyCode == 39){
+	        keyPressed.right = false;
+	    }
+	    else if(e.keyCode == 40){
+	    	keyPressed.down = false;
+	    }
+	    else if(e.keyCode == 87){
+			keyPressed.w = false;
+		}
+		else if(e.keyCode == 65){
+			keyPressed.a = false;
+		}
+	    else if(e.keyCode == 83){
+	        keyPressed.s = false;
+	    }
+	    else if(e.keyCode == 68){
+	    	keyPressed.d = false;
+	    }  
+	    else if(e.keyCode == 17){
+	    	keyPressed.ctrl = false;
+		}
+		else if(e.keyCode == 77){
+	    	keyPressed.m = false;
+	    }
+	    else if(e.keyCode == 80){
+	    	keyPressed.p = false;
+	    }
+	}
+
 	document.addEventListener("mousemove", mouseMoveHandler, false);
 	//if ctrl is pressed, mouse locations will determine ball location
 	function mouseMoveHandler(e){
@@ -18,43 +160,16 @@
 	    }
 	}
 
-	//utility functions
-	function getRandomInt(min, max){
-	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	function updateScore(){
+		system.score = system.time;
 	}
 
-	//credit: https://www.paulirish.com/2009/random-hex-color-code-snippets/
-	function getRandomColor(){
-		return '#'+Math.floor(Math.random()*16777215).toString(16);
+	function pause(){
+		system.paused = !system.paused;
+		if(!system.paused){
+			draw();
+		}
 	}
-
-	//canvas initializations 
-	var canvas = document.getElementById("canvas");
-	var context = canvas.getContext("2d");
-	context.canvas.width  = window.innerWidth;
-  	context.canvas.height = window.innerHeight;
-
-	//overall initializations
-	var wallBounce = .5;
-	var dx = Math.min(canvas.height, canvas.width)/75;
-	var d2x = dx/20;
-
-	var system = {
-		gameState: 0,	//0 is menu, 1 is started, 2 is game 
-		time: 0,
-		paused: 0,
-		score: 0,
-		difficulty: 1
-	}
-
-	//player initializations
-	var player = {x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, ballRadius: 20, innerColor: getRandomColor(), outerColor: getRandomColor(), lives: 1};
-	var totalPlayerBounces = 0;
-
-	//initializations for others
-	var others = [];
-	var currentWall = 0;
-	var initOtherBirthPeriod= 150;
 
 	function addOther(){
 		var mindx = 5;
@@ -89,8 +204,6 @@
 		others.push({x: x, y: y, dx: dx, dy: dy, ballRadius: ballRadius, color: getRandomColor(), lifetime: otherLifetime});
 	}
 
-	var totalOtherBounces = 0;
-
 	//draw functions
 	function drawPlayers(){
 		context.beginPath();
@@ -122,11 +235,15 @@
 		drawBottomText();
 	}
 
+	function fontSetup(fontSize = 20, font = "Arial", color = "gray", align = "center"){
+		context.font = fontSize + "px " + font;
+		context.fillStyle = color;
+		context.textAlign = align;
+	}
+
 	function drawBottomText(){
-		var fontsize = 20;
-		context.font = fontsize + "px Arial";
-		context.fillStyle = "gray";
-		context.textAlign = "center";
+		var fontSize = 20;
+		fontSetup(fontSize);
 		var text = "";
 
 		if(system.gameState == 0){
@@ -138,16 +255,14 @@
 		else{
 			text = "ERROR: unrecognized system.gameState = " + system.gameState;
 		}
-
-		context.fillText(text, canvas.width/2, canvas.height - fontsize);
+		context.fillText(text, canvas.width/2, canvas.height - fontSize);
 	}
 
 	function drawMiddleText(){
-		var fontsize = Math.ceil(Math.max(player.ballRadius,canvas.height/4)/2);
-		context.font = fontsize + "px Arial";
-		context.fillStyle = "gray";
-		context.textAlign = "center";
+		var fontSize = Math.ceil(Math.max(player.ballRadius,canvas.height/4)/2);
+		fontSetup(fontSize);
 		var text = "";
+
 		if(system.paused){
 			text = "paused";
 		}
@@ -159,38 +274,34 @@
 				text = "GAME OVER";
 			}
 			else{
-				text = "ERROR: system.gameState not implemented!";
+				text = "ERROR: unrecognized system.gameState = " + system.gameState;
 			}
 		}
-		
 		context.fillText(text, canvas.width/2, canvas.height/2+player.ballRadius/4);
 	}
 
 	function drawTopText(){
-		var fontsize = 20;
-		context.font = fontsize + "px Arial";
-		context.fillStyle = "gray";
-		context.textAlign = "center";
+		var fontSize = 20;
+		fontSetup(fontSize);
 		var text = "";
 
 		if(system.gameState == 0){
 			text = "Welcome! Please bounce against a wall to begin. :)";
 		}
-		else if(system.gameState == 1 || system.gameState == 2){
+		else if(system.gameState == 1){
 			return;
 		}
-		else{
-			text = "ERROR: system.gameState not implemented!";
+		else if(system.gameState == 2){
+			text = "Please press any key to try again";
 		}
-		context.fillText(text, canvas.width/2, 0 + fontsize);
+		else{
+			text = "ERROR: unrecognized system.gameState = " + system.gameState;
+		}
+		context.fillText(text, canvas.width/2, 0 + fontSize);
 	}
 
 	function updateVolume(){
-		sounds.setVolume(Math.max(1 - others.length/150,0));
-	}
-
-	function updateScore(){
-		system.score = system.time;
+		sounds.setVolume(Math.max(1 - others.length/150, 0));
 	}
 
 	//move functions
@@ -199,7 +310,6 @@
 		player.ballRadius = Math.max(player.ballRadius/2, others.length);
 		sounds.beeps.playTopNote();
 		sounds.beeps.nextChord();
-		totalPlayerBounces++;
 		if(system.gameState == 0){
 			system.gameState = 1;
 		}		
@@ -208,42 +318,41 @@
 	function onOtherBounce(){
 		player.ballRadius++;
 		sounds.beeps.playNote();
-		totalOtherBounces++;
 	}
 
 	function movePlayers(){
 		//check keyboard
 		var dxtarget, dytarget;
 		if(keyPressed.right || keyPressed.d) {
-			dxtarget = dx;
+			dxtarget = playerDx;
 		}
 		else if(keyPressed.left || keyPressed.a) {
-			dxtarget = -dx;
+			dxtarget = -playerDx;
 		}
 		else{
 			dxtarget = 0;
 		}
 	    if(keyPressed.up || keyPressed.w){
-	    	dytarget = -dx;
+	    	dytarget = -playerDx;
 	    }
 	    else if(keyPressed.down || keyPressed.s){
-	    	dytarget = dx;
+	    	dytarget = playerDx;
 	    }
 	    else{
 	    	dytarget = 0;
 	    }
 
 	    if(player.dx > dxtarget){
-	    	player.dx = Math.floor(player.dx - d2x);
+	    	player.dx = Math.floor(player.dx - playerD2x);
 	    }
 	    else if(player.dx < dxtarget){
-	    	player.dx = Math.ceil(player.dx + d2x);
+	    	player.dx = Math.ceil(player.dx + playerD2x);
 	    }
 	    if(player.dy > dytarget){
-	    	player.dy = Math.floor(player.dy - d2x);
+	    	player.dy = Math.floor(player.dy - playerD2x);
 	    }
 	    else if(player.dy < dytarget){
-	    	player.dy = Math.ceil(player.dy + d2x);
+	    	player.dy = Math.ceil(player.dy + playerD2x);
 	    }
 
 	    //adjust location via speed
@@ -301,16 +410,11 @@
 			}
 		}
 	}
-
-	function pause(){
-		system.paused = !system.paused;
-		if(!system.paused){
-			draw();
-		}
-	}
+	
 
 	//main function
 	function draw(){
+		console.log(playerD2x, playerDx, player.dx);
 		//responsive to window size changes
 		context.canvas.width  = window.innerWidth;
 		context.canvas.height = window.innerHeight;
@@ -318,7 +422,7 @@
 
 		//update things via system.time
 		system.time++;
-		//if(system.gameState == 1){
+		if(system.gameState == 1){
 			updateScore();
 			if(system.time % Math.ceil(initOtherBirthPeriod/system.difficulty) == 0){
 				addOther();
@@ -328,7 +432,7 @@
 				system.difficulty*= 1.025;
 
 			}	
-		//}		
+		}		
 		
 		//state changes
 		playerOtherCollisionDetection();
@@ -348,5 +452,9 @@
 			requestAnimationFrame(draw);
 		}
 	}
+	initialize();
+}
 
-	draw();
+
+// Game();
+var game = new Game();

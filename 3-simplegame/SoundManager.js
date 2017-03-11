@@ -57,4 +57,9 @@ function SoundManager(){
 			mix.gain.value = volume;
 		}
 	}
+
+	this.reset = function(){
+		muted = false;
+		this.setVolume(1);
+	}
 }

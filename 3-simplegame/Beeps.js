@@ -5,6 +5,7 @@ function Beeps(audioNodeAbove, context)
 	var chordIndex;
 
 	var topBeep = new Beep(1046.00, audioNodeAbove, context);
+	// beeps represents an array of chords, where beeps[i] represents a chord, and beeps[i][j] represents a note within a chord
 	// note: the first octave (<100 Hz) can't be played on laptop speakers, but do show up via earbuds/speakers
 	var beeps =
 	[
@@ -98,5 +99,9 @@ function Beeps(audioNodeAbove, context)
 	}
 	this.nextChord = function(){
 		chordIndex = (chordIndex + 1) % beeps.length;
+	}
+	this.reset = function(){
+		chordIndex = 0;
+		beepIndex = 0;
 	}
 }
