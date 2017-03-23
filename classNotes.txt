@@ -1,0 +1,10 @@
+
+Notes:
+
+	function removeIf(value, arr) {
+		return arr.filter(val => val !== value);
+	}
+
+	Object.keys({a:1, b:2}) // ['a','b']
+
+	Object.assign({a:1, b:2}, {b:3, c:4}) // {a:1, b:3, c:4}

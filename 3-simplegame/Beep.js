@@ -1,4 +1,4 @@
-//Provides a "beep" sound, mimicing a piano note, using the Web Audio API.
+//Provides a "beep" sound, mimicking a piano note, using the Web Audio API.
 function Beep(frequency, audioNodeAbove, context)
 {	
 	var wave = "sine";				//sine, square, sawtooth, triangle available
@@ -36,7 +36,7 @@ function Beep(frequency, audioNodeAbove, context)
 
 		oscillator.stop(context.currentTime + attack + release);	
 		
-		beepTearDown();	//due to oscillators being single-use objects (I think this was bad design of the audio API, but meh)
+		beepTearDown();	//due to oscillators being single-use objects (I think this was bad design of the audio API, but meh, wasn't sure how to compensate here)
 		beepSetup();
 	}
 

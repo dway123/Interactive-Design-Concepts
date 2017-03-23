@@ -1,3 +1,5 @@
+//Base Game Code...
+
 //canvas initializations 
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
@@ -199,7 +201,7 @@ function Game(){
 	function addOther(){
 		var x, y, dx, dy;
 		var otherLifetime = Math.ceil(1.25 * system.difficulty * initOtherBirthPeriod);
-		var ballRadius = getRandomInt(canvas.height/100,canvas.height/50);
+		var ballRadius = getRandomInt(canvas.height/90,canvas.height/30);
 		var mindx = canvas.height/20/(ballRadius);
 		var maxdx = canvas.height/10/(ballRadius);
 		var lifetime = otherLifetime * ballRadius / (canvas.height/100);
@@ -316,7 +318,12 @@ function Game(){
 			text = "Welcome! Please bounce against a wall to begin. :)";
 		}
 		else if(system.gameState == 1){
-			return;
+			if(system.time < 2 * initOtherBirthPeriod){
+				text = "Dodge the other balls!";
+			}
+			else{
+				return;
+			}
 		}
 		else if(system.gameState == 2){
 			text = "Please press space to try again";
