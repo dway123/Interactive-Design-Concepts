@@ -15,6 +15,7 @@ function Game(){
 	const playerD2x = playerDx/20;
 	const initOtherBirthPeriod= 150;
 	const startingLives = 1;
+	const defaultTextSize = canvas.height/30;
 
 	//changing game variables
 	var sounds = new SoundManager();
@@ -50,7 +51,7 @@ function Game(){
 			y: canvas.height/2, 
 			dx: 0, 
 			dy: 0, 
-			ballRadius: 20, 
+			ballRadius: canvas.height/30, 
 			innerColor: randomColor({hue: colorManager.colors[colorManager.playerColorIndex], luminosity: 'light'}), 
 			outerColor: randomColor({hue: colorManager.colors[colorManager.playerColorIndex], luminosity: 'dark'}), 
 			lives: startingLives
@@ -264,14 +265,14 @@ function Game(){
 		drawTopLeftText();
 	}
 
-	function fontSetup(fontSize = 20, align = "center", font = "Arial", color = "gray"){
+	function fontSetup(fontSize = defaultTextSize, align = "center", font = "Arial", color = "gray"){
 		context.font = fontSize + "px " + font;
 		context.fillStyle = color;
 		context.textAlign = align;
 	}
 
 	function drawBottomText(){
-		var fontSize = 20;
+		var fontSize = defaultTextSize;
 		fontSetup(fontSize);
 		var text = "";
 
@@ -310,7 +311,7 @@ function Game(){
 	}
 
 	function drawTopText(){
-		var fontSize = 20;
+		var fontSize = defaultTextSize;
 		fontSetup(fontSize);
 		var text = "";
 
@@ -335,7 +336,7 @@ function Game(){
 	}
 
 	function drawTopLeftText(){
-		var fontSize = 20;
+		var fontSize = defaultTextSize;
 		fontSetup(fontSize = fontSize, align = "left");
 		context.fillText("High Score: " + system.highScore, fontSize/2, 0 + fontSize);
 	}
@@ -460,8 +461,8 @@ function Game(){
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
 		//update things via system.time
-		system.time++;
 		if(system.gameState == 1){
+			system.time++;
 			updateScore();
 			if(system.time % Math.ceil(initOtherBirthPeriod/system.difficulty) == 0){
 				addOther();
