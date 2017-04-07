@@ -1,51 +1,44 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	<script src = "https://unpkg.com/vue/dist/vue.js"></script>
-
-	<style>
-	body{
-		margin:0;
-		background-color: tomato;
-	}
-	</style>
-	</head>
-	<body>
-	<div id = "app">
-		<input type = "text" v-model="newToDo" />
-		<button v-on:click = "createNewToDo">Add todo </button>
-		{{message}}
-		<ol>
-			<todo-item>
-			v-for="item in todos"
-			:todo = "item"></todo-item>
-		</ol>
-	</div>
-
-	<script>
-		Vue.component('todo-item', {
-			template: '<li>{{todo}}</li>',
-			props: ['todo']
-		});
-		let app = new Vue({
-			el: '#app',			
-			data: {
-				todos:[],
-				message: "TO-DO LIST",
-				newToDo: ''
-			},
-			methods: {
-				createNewToDo: function() {
-					if(this.newToDo){
-						this.todos.push(this.newToDo);
-						this.newToDo = '';
-					}
-				}
+		<style>
+			.feedback {
+				display: none;
 			}
-		});
 
-		
+			.feedback.active {
+				display:block;
+			}
+		</style>
+	</head>
+	<!-- import jQuery -->
+	<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
 
-	</script>
-	</body>
+  <script>
+//init firebase
+var config = {
+	apiKey: "AIzaSyAvLbTb2SVy3cjR_AeuxWC0zaQNMNe4l2A",
+	authDomain: "guess-my-number-660be.firebaseapp.com",
+	databaseURL: "lol",
+	projectID: "asdfasdf",
+	storageBucket: "asdf",
+	messagingSenderId: "234234234"
+};
+firebase.initializeApp(config);
+
+var database = firebase.database();
+var numberRef = database.ref('number');
+
+var $number = $('#number');
+//lol missed most of the code
+</script>
 </html>
+
+
+
+
+
+
