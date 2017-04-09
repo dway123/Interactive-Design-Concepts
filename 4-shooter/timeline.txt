@@ -1,4 +1,4 @@
 By 4/13/2017 - Single player completed
-By 4/20/2017 - Firebase Multi-player completed (one keyboard)
+By 4/20/2017 - Firebase Multi-player completed
 By 4/27/2017 - NPCs implemented
 By 4/04/2017 - Finishing Touches/Game balancing. Project Completed.

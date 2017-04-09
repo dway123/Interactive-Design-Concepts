@@ -1,70 +1,112 @@
 function Player(origX, origY, ctx){
 	const moveSpeed = 10;
 	const rotationSpeed = 5;
-	
-	var location = {
-		x: origX,
-		y: origY
-	};
 
-	var velocity = {
-		x: 0,
-		y: 0
-	}
+	var base = new Ball(origX, origY, ctx, 15, "red");
 
-	var ballRadius = 15;
 	var lives = 3;
-	var color = "red";
 	var context = ctx;
 	var angle = 0;	//rotation about z axis
 
 	var turret = {
 		l: 10,
 		w: 25,
-		color: "black"
+		color: "black",
+		canShoot: true,
+		shootDelay: 250
 	};
 
+	var bullets = [];
+	var bulletsShot = 0;
+	var bulletLifetime = 1000;
+
 	this.render = function(){
+		//render turret
 		context.save();
 
-	    context.translate(location.x, location.y);
-	    context.rotate( angle*Math.PI/180 ); 
-	    context.translate(-location.x, -location.y);
+	    context.translate(base.x, base.y);
+	    context.rotate(degreesToRadians(angle)); 
+	    context.translate(-base.x, -base.y);
 
 	   	context.fillStyle = turret.color;
-		context.fillRect(location.x, location.y - turret.l/2, turret.w, turret.l);
-
-		context.beginPath();
-	    context.arc(location.x, location.y, ballRadius, 0, Math.PI*2);
-	    context.fillStyle = color;
-	    context.fill();
-	    context.closePath();
+		context.fillRect(base.x, base.y - turret.l/2, turret.w, turret.l);
 
 	    context.restore();
+
+	    //render base
+	    base.render();
+
+	    //render bullets
+	    bullets.forEach(function(bullet){
+	    	bullet.render();
+	    });
 	}
-	this.shoot = function(){
-		console.log("shoot");
+
+	degreesToRadians = function(degrees){
+		return degrees*Math.PI/180;
 	}
+
+
+	tryShoot = function(){
+		if(turret.canShoot){
+			turret.canShoot = false;
+			setTimeout(function(){
+				turret.canShoot = true;
+			}, turret.shootDelay);
+			shoot();
+		}
+	}
+
+	shoot = function(){
+		//generate another ball from turret
+		var bulletLocation = {
+			x: base.x + turret.w * Math.cos(degreesToRadians(angle)),
+			y: base.y + turret.w * Math.sin(degreesToRadians(angle))
+		}
+		var bullet = new Ball(bulletLocation.x, bulletLocation.y, ctx, 5, "red");
+
+		var bulletSpeed = 12;
+		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
+		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(angle));
+		bullet.id = bulletsShot;
+		bullets.push(bullet);
+
+		var removeId = bulletsShot;
+		setTimeout(function(){removeBulletId(removeId);}, bulletLifetime);
+
+		bulletsShot++;
+		console.log("shoot success: " + bullet.id);
+	}
+
+	removeBulletId = function(removeId){
+		console.log("trying to remove " + removeId)
+		var temp = bullets.filter(function(bullet) {
+		    return bullet.id !== removeId;
+		});
+		bullets = temp;
+		console.log(bullets);
+		console.log(temp);
+	}
+
 	this.input = function(keys){
-		velocity = {
-			x: 0,
-			y: 0
-		};
+		base.dx = 0;
+		base.dy = 0;
+
 		//check Pressed keys
 		for (var key in keys) {
 	        if (!keys.hasOwnProperty(key)) continue;
 	        if (key == 37 || key == 65) {	//left/a
-	            velocity.x -= moveSpeed;
+	            base.dx -= moveSpeed;
 	        }
 	        else if (key == 39 || key == 68) {	//right/d
-	            velocity.x += moveSpeed;
+	            base.dx += moveSpeed;
 	        }
 	        
 	        if (key == 38 || key == 87) {	//up/w
-	            velocity.y -= moveSpeed;
+	            base.dy -= moveSpeed;
 	        }
 	        else if (key == 40 || key == 83) {	//down/s
-	           	velocity.y += moveSpeed;
+	           	base.dy += moveSpeed;
 	        }
 
 	        if(key == 81){	//q
@@ -75,32 +117,16 @@ function Player(origX, origY, ctx){
 	        }
 
 	        if(key == 32){	//space
-	        	this.shoot();
+	        	tryShoot();
 	        }
 	    }
 	}
 
 	this.move = function(){
-	    const wallOffset = {
-	    	x: 0,
-	    	y: moveSpeed/2
-	    }
-	    //todo: collision detection here!!!
-	    if(location.x + velocity.x - ballRadius < 0 + wallOffset.x){						//left wall
-	    	velocity.x = Math.abs(velocity.x);
-	    }
-	    if(location.x + velocity.x + ballRadius > context.canvas.width - wallOffset.x) {	//right wall
-	        velocity.x = -Math.abs(velocity.x);
-	    }
-	    if(location.y + velocity.x - ballRadius < 0 + wallOffset.y){						//upper wall
-	    	velocity.y = Math.abs(velocity.y);
-	    }
-	    if(location.y + velocity.x + ballRadius > context.canvas.height - wallOffset.y) {	//lower wall
-	        velocity.y = -Math.abs(velocity.y);
-	    }
-
-	    location.x += velocity.x;
-	    location.y += velocity.y;
+	    base.move();
+	    bullets.forEach(function(bullet){
+	    	bullet.move();
+	    });
 	}	
 	this.die = function(){
 		lives--;
