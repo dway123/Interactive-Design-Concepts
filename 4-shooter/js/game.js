@@ -52,6 +52,7 @@ function Game(){
 		player.move();
 		player.render();
 		text.drawMiddleBottom("Player lives: " + player.getLives());
+		text.drawMiddleTop("Welcome to the test.");
 		requestAnimationFrame(render);
 	}
 }

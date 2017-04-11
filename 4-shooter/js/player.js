@@ -16,9 +16,7 @@ function Player(origX, origY, ctx){
 		shootDelay: 250
 	};
 
-	var bullets = [];
-	var bulletsShot = 0;
-	var bulletLifetime = 1000;
+	var bullets = new BulletGroup({});
 
 	this.render = function(){
 		//render turret
@@ -35,11 +33,8 @@ function Player(origX, origY, ctx){
 
 	    //render base
 	    base.render();
-
-	    //render bullets
-	    bullets.forEach(function(bullet){
-	    	bullet.render();
-	    });
+	    bullets.render();
+	    
 	}
 
 	degreesToRadians = function(degrees){
@@ -68,24 +63,8 @@ function Player(origX, origY, ctx){
 		var bulletSpeed = 12;
 		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
 		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(angle));
-		bullet.id = bulletsShot;
+		
 		bullets.push(bullet);
-
-		var removeId = bulletsShot;
-		setTimeout(function(){removeBulletId(removeId);}, bulletLifetime);
-
-		bulletsShot++;
-		console.log("shoot success: " + bullet.id);
-	}
-
-	removeBulletId = function(removeId){
-		console.log("trying to remove " + removeId)
-		var temp = bullets.filter(function(bullet) {
-		    return bullet.id !== removeId;
-		});
-		bullets = temp;
-		console.log(bullets);
-		console.log(temp);
 	}
 
 	this.input = function(keys){
@@ -124,9 +103,7 @@ function Player(origX, origY, ctx){
 
 	this.move = function(){
 	    base.move();
-	    bullets.forEach(function(bullet){
-	    	bullet.move();
-	    });
+	    bullets.move();
 	}	
 	this.die = function(){
 		lives--;

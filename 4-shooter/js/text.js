@@ -27,6 +27,12 @@ function Text(context){
 	this.drawMiddleBottom = function(text){
 		const x = context.canvas.width/2;
 		const y = context.canvas.height - defaultOptions.fontSize;
-		drawText({text: text, x: x, y: y})
+		drawText({text: text, x: x, y: y});
+	}
+
+	this.drawMiddleTop = function(text){
+		const x = context.canvas.width/2
+		const y = 0 + defaultOptions.fontSize;
+		drawText({text: text, x: x, y: y});
 	}
 }
