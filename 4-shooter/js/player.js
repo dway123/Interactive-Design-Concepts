@@ -1,8 +1,9 @@
-function Player(origX, origY, ctx){
+function Player(origX, origY, ctx, id, options){
 	const moveSpeed = 10;
 	const rotationSpeed = 5;
 
-	var base = new Ball(origX, origY, ctx, 15, "red");
+	var base = new Ball(origX, origY, ctx, 15, (options.color || "gray"));
+	var bullets = new BulletGroup({});
 
 	var lives = 3;
 	var context = ctx;
@@ -16,7 +17,15 @@ function Player(origX, origY, ctx){
 		shootDelay: 250
 	};
 
-	var bullets = new BulletGroup({});
+	var keyMap = options.keyMap || {
+		left: 65,	//a
+		right: 68,	//d
+		up: 87,		//w
+		down: 83,	//s
+		cw: 81,		//q
+		ccw: 69,	//e
+		shoot: 32	//space
+	};
 
 	this.render = function(){
 		//render turret
@@ -42,23 +51,23 @@ function Player(origX, origY, ctx){
 	}
 
 
-	tryShoot = function(){
+	this.tryShoot = function(){
 		if(turret.canShoot){
 			turret.canShoot = false;
 			setTimeout(function(){
 				turret.canShoot = true;
 			}, turret.shootDelay);
-			shoot();
+			this.shoot();
 		}
 	}
 
-	shoot = function(){
+	this.shoot = function(){
 		//generate another ball from turret
 		var bulletLocation = {
 			x: base.x + turret.w * Math.cos(degreesToRadians(angle)),
 			y: base.y + turret.w * Math.sin(degreesToRadians(angle))
 		}
-		var bullet = new Ball(bulletLocation.x, bulletLocation.y, ctx, 5, "red");
+		var bullet = new Ball(bulletLocation.x, bulletLocation.y, ctx, 5, base.color);
 
 		var bulletSpeed = 12;
 		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
@@ -74,29 +83,29 @@ function Player(origX, origY, ctx){
 		//check Pressed keys
 		for (var key in keys) {
 	        if (!keys.hasOwnProperty(key)) continue;
-	        if (key == 37 || key == 65) {	//left/a
+	        if (key == keyMap.left) {	//left/a
 	            base.dx -= moveSpeed;
 	        }
-	        else if (key == 39 || key == 68) {	//right/d
+	        else if (key == keyMap.right) {	//right/d
 	            base.dx += moveSpeed;
 	        }
 	        
-	        if (key == 38 || key == 87) {	//up/w
+	        if (key == keyMap.up) {	//up/w
 	            base.dy -= moveSpeed;
 	        }
-	        else if (key == 40 || key == 83) {	//down/s
+	        else if (key == keyMap.down) {	//down/s
 	           	base.dy += moveSpeed;
 	        }
 
-	        if(key == 81){	//q
+	        if(key == keyMap.cw){	//q
 	        	angle = (angle - rotationSpeed) % 360;
 	        }
-	        if(key == 69){	//e
+	        if(key == keyMap.ccw){	//e
 	        	angle = (angle + rotationSpeed) % 360;
 	        }
 
-	        if(key == 32){	//space
-	        	tryShoot();
+	        if(key == keyMap.shoot){	//space
+	        	this.tryShoot();
 	        }
 	    }
 	}

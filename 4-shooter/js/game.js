@@ -6,7 +6,7 @@ function Game(){
 	var context;
 	var text;
 
-	var player;
+	var players;
 
 	var backgroundMusic;
 	var backgroundColor = "white";
@@ -38,7 +38,20 @@ function Game(){
 		});
 
 		//objects setup
-		player = new Player(canvas.width/2, canvas.height/2, context);
+		players = [];
+		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 1, {color: "red"});
+		var p2Controls = {
+			left: 37,	//arrow keys (on numpad)
+			right: 39, 	
+			up: 38,
+			down: 12,	//clear (5 on numpad)
+			cw: 36,		//home
+			ccw: 33,		//pgup
+			shoot: 40	//down arrow 
+		}
+		var p2 = new Player(canvas.width*3/4, canvas.height/2, context, 2, {color: "blue", keyMap: p2Controls});
+		players.push(p1);
+		players.push(p2);
 		text = new Text(context);
 
 		//begin rendering
@@ -48,10 +61,13 @@ function Game(){
 	function render(){
 		context.fillStyle = backgroundColor;
 		context.fillRect(0, 0, canvas.width, canvas.height);
-		player.input(keys);
-		player.move();
-		player.render();
-		text.drawMiddleBottom("Player lives: " + player.getLives());
+		for(var i = 0; i < players.length; i++){
+			players[i].input(keys);
+			players[i].move();
+			players[i].render();
+			text.drawMiddleBottom("Player lives: " + players[i].getLives());
+		}
+		
 		text.drawMiddleTop("Welcome to the test.");
 		requestAnimationFrame(render);
 	}
