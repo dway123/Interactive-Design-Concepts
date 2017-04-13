@@ -58,17 +58,56 @@ function Game(){
 		render();
 	}
 
+
+	//collision detection between players and bullets (not walls tho)
+	function playerBallCollisionDetection(){
+		for(var i = 0; i < players.length; i++){		//for each player
+			var player = players[i];
+			for(var j = 0; j < players.length; j++){	//check each other player/team's bullets
+				if(i != j){
+					var otherBullets = players[j].bullets.bullets;
+					for(var k = 0; k < otherBullets.length; k++){
+						var dx = player.base.x - otherBullets[k].x;
+						var dy = player.base.y - otherBullets[k].y;
+						var dr2 = dx * dx + dy * dy;
+						var r1 = player.base.radius;
+						var r2 = otherBullets[k].radius;
+						var rsq = (r1 + r2) * (r1 + r2);
+						if(rsq >= dr2){
+							players[i].die();
+							players[j].bullets.removeBulletById(k);
+							if(players[i].getLives() <= 0){
+								console.log(players[i].getLives());
+								players.splice(i, 1);		//player hit!!!	
+							}
+						}
+					}
+				}
+			}
+		}
+	}	
+
 	function render(){
+
 		context.fillStyle = backgroundColor;
 		context.fillRect(0, 0, canvas.width, canvas.height);
+
+		playerBallCollisionDetection();
+
 		for(var i = 0; i < players.length; i++){
 			players[i].input(keys);
 			players[i].move();
 			players[i].render();
-			text.drawMiddleBottom("Player lives: " + players[i].getLives());
+		}
+
+		if(players[0]){
+			text.drawMiddleTop("Red Player lives: " + players[0].getLives());
+		}
+		if(players[1]){
+			text.drawMiddleBottom("Blue Player lives: " + players[1].getLives());	
 		}
 		
-		text.drawMiddleTop("Welcome to the test.");
+		
 		requestAnimationFrame(render);
 	}
 }

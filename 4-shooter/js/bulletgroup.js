@@ -27,4 +27,8 @@ function BulletGroup(options){
 	    	}
 	    };
 	}
+
+	this.removeBulletById = function(id){
+		this.bullets.splice(id, 1);
+	}
 }
