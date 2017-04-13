@@ -6,9 +6,7 @@ function BulletGroup(options){
 	this.push = function(bullet){
 		this.bullets.push(bullet);
 		bullet.lifetime = bulletLifetime;
-
 		bulletsShot++;
-		console.log("shoot success");
 	}
 	this.render = function(){
 	    this.bullets.forEach(function(bullet){
