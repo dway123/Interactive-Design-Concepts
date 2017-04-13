@@ -14,18 +14,10 @@ function Player(origX, origY, ctx, id, options){
 		w: 25,
 		color: "black",
 		canShoot: true,
-		shootDelay: 250
+		shootDelay: 200
 	};
 
-	var keyMap = options.keyMap || {
-		left: 65,	//a
-		right: 68,	//d
-		up: 87,		//w
-		down: 83,	//s
-		cw: 81,		//q
-		ccw: 69,	//e
-		shoot: 32	//space
-	};
+	var keyMap = options.keyMap;
 
 	this.die = function(){
 		lives--;

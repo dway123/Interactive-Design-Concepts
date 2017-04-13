@@ -39,14 +39,23 @@ function Game(){
 
 		//objects setup
 		players = [];
-		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 1, {color: "red"});
+		var p1Controls = {
+			left: 65,	//a
+			right: 68,	//d
+			up: 87,		//w
+			down: 83,	//s
+			cw: 81,		//q
+			ccw: 69,	//e
+			shoot: 32	//space
+		}
+		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 1, {color: "red", keyMap: p1Controls});
 		var p2Controls = {
 			left: 37,	//arrow keys (on numpad)
 			right: 39, 	
 			up: 38,
 			down: 12,	//clear (5 on numpad)
 			cw: 36,		//home
-			ccw: 33,		//pgup
+			ccw: 33,	//pgup
 			shoot: 40	//down arrow 
 		}
 		var p2 = new Player(canvas.width*3/4, canvas.height/2, context, 2, {color: "blue", keyMap: p2Controls});
@@ -77,7 +86,6 @@ function Game(){
 							players[i].die();
 							players[j].bullets.removeBulletById(k);
 							if(players[i].getLives() <= 0){
-								console.log(players[i].getLives());
 								players.splice(i, 1);		//player hit!!!	
 							}
 						}
