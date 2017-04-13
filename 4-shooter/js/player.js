@@ -4,11 +4,18 @@ function Player(origX, origY, ctx, id, options){
 
 	this.base = new Ball(origX, origY, ctx, 15, (options.color || "gray"));
 	this.bullets = new BulletGroup({});
-	this.turret = new Turret(ctx, {});
 
 	var lives = 3;
 	var context = ctx;
 	var angle = 0;	//rotation about z axis
+
+	var turret = {
+		l: 10,
+		w: 25,
+		color: "black",
+		canShoot: true,
+		shootDelay: 200
+	};
 
 	var keyMap = options.keyMap;
 
