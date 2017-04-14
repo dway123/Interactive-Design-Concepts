@@ -1,7 +1,7 @@
 function Ball(origx, origy, ctx, rds, clr){
 	const maxSpeed = 10;
 	const context = ctx;
-	var color = clr;
+	this.color = clr;
 
 	this.radius = rds;
 
@@ -39,7 +39,7 @@ function Ball(origx, origy, ctx, rds, clr){
 	this.render = function(){
 		context.beginPath();
 	    context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-	    context.fillStyle = color;
+	    context.fillStyle = this.color;
 	    context.fill();
 	    context.closePath();
 	}

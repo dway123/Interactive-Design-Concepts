@@ -1,21 +1,13 @@
 function Player(origX, origY, ctx, id, options){
 	const moveSpeed = 10;
-	const rotationSpeed = 5;
 
 	this.base = new Ball(origX, origY, ctx, 15, (options.color || "gray"));
 	this.bullets = new BulletGroup({});
+	this.turret = new Turret(ctx, {});
 
 	var lives = 3;
 	var context = ctx;
 	var angle = 0;	//rotation about z axis
-
-	var turret = {
-		l: 10,
-		w: 25,
-		color: "black",
-		canShoot: true,
-		shootDelay: 200
-	};
 
 	var keyMap = options.keyMap;
 
@@ -28,17 +20,7 @@ function Player(origX, origY, ctx, id, options){
 	}
 
 	this.render = function(){
-		//render turret
-		context.save();
-
-	    context.translate(this.base.x, this.base.y);
-	    context.rotate(degreesToRadians(angle)); 
-	    context.translate(-this.base.x, -this.base.y);
-
-	   	context.fillStyle = turret.color;
-		context.fillRect(this.base.x, this.base.y - turret.l/2, turret.w, turret.l);
-
-	    context.restore();
+	    this.turret.render(this.base.x, this.base.y);
 
 	    //render base
 	    this.base.render();
@@ -52,28 +34,12 @@ function Player(origX, origY, ctx, id, options){
 
 
 	this.tryShoot = function(){
-		if(turret.canShoot){
-			turret.canShoot = false;
-			setTimeout(function(){
-				turret.canShoot = true;
-			}, turret.shootDelay);
-			this.shoot();
+		if(this.turret.trigger()){
+			var bullet = this.turret.getShotBullet(this.base.x, this.base.y, this.base.color);
+			this.bullets.push(bullet);
+			return true;
 		}
-	}
-
-	this.shoot = function(){
-		//generate another ball from turret
-		var bulletLocation = {
-			x: this.base.x + turret.w * Math.cos(degreesToRadians(angle)),
-			y: this.base.y + turret.w * Math.sin(degreesToRadians(angle))
-		}
-		var bullet = new Ball(bulletLocation.x, bulletLocation.y, ctx, 5, this.base.color);
-
-		var bulletSpeed = 5;
-		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
-		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(angle));
-		
-		this.bullets.push(bullet);
+		return false;
 	}
 
 	this.input = function(keys){
@@ -83,28 +49,28 @@ function Player(origX, origY, ctx, id, options){
 		//check Pressed keys
 		for (var key in keys) {
 	        if (!keys.hasOwnProperty(key)) continue;
-	        if (key == keyMap.left) {	//left/a
+	        if (key == keyMap.left) {		//left/a
 	            this.base.dx -= moveSpeed;
 	        }
 	        else if (key == keyMap.right) {	//right/d
 	            this.base.dx += moveSpeed;
 	        }
 	        
-	        if (key == keyMap.up) {	//up/w
+	        if (key == keyMap.up) {			//up/w
 	            this.base.dy -= moveSpeed;
 	        }
 	        else if (key == keyMap.down) {	//down/s
 	           	this.base.dy += moveSpeed;
 	        }
 
-	        if(key == keyMap.cw){	//q
-	        	angle = (angle - rotationSpeed) % 360;
+	        if(key == keyMap.cw){			//q
+	        	this.turret.rotate(-1);
 	        }
-	        if(key == keyMap.ccw){	//e
-	        	angle = (angle + rotationSpeed) % 360;
+	        if(key == keyMap.ccw){			//e
+	        	this.turret.rotate(1);
 	        }
 
-	        if(key == keyMap.shoot){	//space
+	        if(key == keyMap.shoot){		//space
 	        	this.tryShoot();
 	        }
 	    }

@@ -15,8 +15,8 @@ function Game(){
 	//http://stackoverflow.com/questions/7298507/move-element-with-keypress-multiple
 	var keys = {};
 
-
 	this.init = function(){
+
 		//canvas setup
 		canvas = document.getElementById("canvas");
 		context = canvas.getContext("2d");
@@ -114,7 +114,6 @@ function Game(){
 		if(players[1]){
 			text.drawMiddleBottom("Blue Player lives: " + players[1].getLives());	
 		}
-		
 		
 		requestAnimationFrame(render);
 	}
