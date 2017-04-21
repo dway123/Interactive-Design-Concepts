@@ -35,4 +35,8 @@ function Text(context){
 		const y = 0 + defaultOptions.fontSize;
 		drawText({text: text, x: x, y: y});
 	}
+
+	this.drawMiddleMiddle = function(text){
+		drawText({text: text});
+	}
 }

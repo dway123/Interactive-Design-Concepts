@@ -48,7 +48,7 @@ function Game(){
 			ccw: 69,	//e
 			shoot: 32	//space
 		}
-		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 1, {color: "red", keyMap: p1Controls});
+		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 0, {color: "red", keyMap: p1Controls});
 		var p2Controls = {
 			left: 37,	//arrow keys (on numpad)
 			right: 39, 	
@@ -58,13 +58,25 @@ function Game(){
 			ccw: 33,	//pgup
 			shoot: 40	//down arrow 
 		}
-		var p2 = new Player(canvas.width*3/4, canvas.height/2, context, 2, {color: "blue", keyMap: p2Controls});
+		var p2 = new Player(canvas.width*3/4, canvas.height/2, context, 1, {color: "blue", keyMap: p2Controls});
 		players.push(p1);
 		players.push(p2);
 		text = new Text(context);
 
+		for(var i = 0; i < players.length; i++){
+			dbListenerSetup(i);
+		}
+	  	
 		//begin rendering
 		render();
+	}
+
+	function dbListenerSetup(id){
+		players[id].dbRef.child('base').on('value', function(snapshot){
+	  		base = snapshot.val();
+	  		players[id].base.x = base.x;
+	  		players[id].base.y = base.y;
+	  	});
 	}
 
 
@@ -96,7 +108,6 @@ function Game(){
 	}	
 
 	function render(){
-
 		context.fillStyle = backgroundColor;
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -113,8 +124,8 @@ function Game(){
 		}
 		if(players[1]){
 			text.drawMiddleBottom("Blue Player lives: " + players[1].getLives());	
-		}
-		
-		requestAnimationFrame(render);
+		}	 	
+
+		requestAnimationFrame(render)
 	}
 }

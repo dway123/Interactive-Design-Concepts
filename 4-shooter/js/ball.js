@@ -10,7 +10,6 @@ function Ball(origx, origy, ctx, rds, clr){
 	this.dx = 0;
 	this.dy = 0;
 
-
 	this.move = function(){
 		//wall collision detection
 	    const wallOffset = {

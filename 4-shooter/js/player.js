@@ -1,15 +1,27 @@
 function Player(origX, origY, ctx, id, options){
-	const moveSpeed = 10;
+	const moveSpeed = 5;
 
+	this.id = id;
 	this.base = new Ball(origX, origY, ctx, 15, (options.color || "gray"));
 	this.bullets = new BulletGroup({});
 	this.turret = new Turret(ctx, {});
+	this.dbRef = firebase.database().ref('players/' + this.id);
 
 	var lives = 3;
 	var context = ctx;
 	var angle = 0;	//rotation about z axis
 
+	var actions = 0; //used to send to db less often
+
 	var keyMap = options.keyMap;
+
+	this.sendToDB = function(){
+		var base = {
+			x: this.base.x,
+			y: this.base.y
+		}
+		this.dbRef.child('base').set(base);
+	}
 
 	this.die = function(){
 		lives--;
@@ -25,7 +37,6 @@ function Player(origX, origY, ctx, id, options){
 	    //render base
 	    this.base.render();
 	    this.bullets.render();
-	    
 	}
 
 	degreesToRadians = function(degrees){
@@ -43,6 +54,7 @@ function Player(origX, origY, ctx, id, options){
 	}
 
 	this.input = function(keys){
+		var hadInput = false;
 		this.base.dx = 0;
 		this.base.dy = 0;
 
@@ -73,6 +85,14 @@ function Player(origX, origY, ctx, id, options){
 	        if(key == keyMap.shoot){		//space
 	        	this.tryShoot();
 	        }
+	        hadInput = true;
+	    }
+	    if(hadInput){
+	    	actions++;
+	    }
+	    if(actions > 10){
+	    	actions -= 10;
+	    	this.sendToDB();
 	    }
 	}
 
