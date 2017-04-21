@@ -72,7 +72,7 @@ function Game(){
 	}
 
 	function dbListenerSetup(id){
-		players[id].dbRef.child('base').on('value', function(snapshot){
+		players[id].dbRef.on('value', function(snapshot){
 	  		p = snapshot.val();
 	  		players[id].base.x = p.x;
 	  		players[id].base.y = p.y;
