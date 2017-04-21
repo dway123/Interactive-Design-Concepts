@@ -73,9 +73,10 @@ function Game(){
 
 	function dbListenerSetup(id){
 		players[id].dbRef.child('base').on('value', function(snapshot){
-	  		base = snapshot.val();
-	  		players[id].base.x = base.x;
-	  		players[id].base.y = base.y;
+	  		p = snapshot.val();
+	  		players[id].base.x = p.x;
+	  		players[id].base.y = p.y;
+	  		players[id].turret.setAngle(p.turretAngle);
 	  	});
 	}
 

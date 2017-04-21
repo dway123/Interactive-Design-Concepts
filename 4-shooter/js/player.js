@@ -9,7 +9,6 @@ function Player(origX, origY, ctx, id, options){
 
 	var lives = 3;
 	var context = ctx;
-	var angle = 0;	//rotation about z axis
 
 	var actions = 0; //used to send to db less often
 
@@ -18,9 +17,10 @@ function Player(origX, origY, ctx, id, options){
 	this.sendToDB = function(){
 		var base = {
 			x: this.base.x,
-			y: this.base.y
+			y: this.base.y,
+			turretAngle: this.turret.getAngle()
 		}
-		this.dbRef.child('base').set(base);
+		this.dbRef.set(base);
 	}
 
 	this.die = function(){
@@ -42,7 +42,6 @@ function Player(origX, origY, ctx, id, options){
 	degreesToRadians = function(degrees){
 		return degrees*Math.PI/180;
 	}
-
 
 	this.tryShoot = function(){
 		if(this.turret.trigger()){

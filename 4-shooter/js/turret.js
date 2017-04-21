@@ -1,6 +1,6 @@
 function Turret(ctx, options){
 
-	this.angle = options.angle || 0;
+	var angle = options.angle || 0;
 	var length = options.length || 10;
 	var width = options.width || 25;
 	var color = options.color || "black";
@@ -15,7 +15,7 @@ function Turret(ctx, options){
 		context.save();
 
 	    context.translate(x, y);
-	    context.rotate(degreesToRadians(this.angle)); 
+	    context.rotate(degreesToRadians(angle)); 
 	    context.translate(-x, -y);
 
 	   	context.fillStyle = color;
@@ -40,34 +40,26 @@ function Turret(ctx, options){
 	//wow it shot. Now return the bullet
 	this.getShotBullet = function(basex, basey, baseColor){
 		var bulletLocation = {
-			x: basex + width * Math.cos(degreesToRadians(this.angle)),
-			y: basey + width * Math.sin(degreesToRadians(this.angle))
+			x: basex + width * Math.cos(degreesToRadians(angle)),
+			y: basey + width * Math.sin(degreesToRadians(angle))
 		}
 		var bullet = new Ball(bulletLocation.x, bulletLocation.y, context, 5, baseColor);
 
-		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(this.angle));
-		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(this.angle));
+		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
+		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(angle));
 		
 		return bullet;
 	}
 
 	this.getAngle = function(){
-		return this.angle;
+		return angle;
 	}
 
-	this.saveTurret = function(){
-		var options = {
-			angle: this.angle,
-			length: length,
-			width: width,
-			color: color,
-			bulletSpeed: bulletSpeed,
-			delay: delay,
-			rotationSpeed: rotationSpeed
-		}
+	this.setAngle = function(newAngle){
+		angle = newAngle;
 	}
 
 	this.rotate = function(direction){
-		this.angle = (this.angle + direction * rotationSpeed) % 360;
+		angle = (angle + direction * rotationSpeed) % 360;
 	}
 }
