@@ -43,7 +43,7 @@ function Turret(ctx, options){
 			x: basex + width * Math.cos(degreesToRadians(angle)),
 			y: basey + width * Math.sin(degreesToRadians(angle))
 		}
-		var bullet = new Ball(bulletLocation.x, bulletLocation.y, context, 5, baseColor);
+		var bullet = new Ball(bulletLocation.x, bulletLocation.y, context, 5, {color: baseColor});
 
 		bullet.dx = bulletSpeed * Math.cos(degreesToRadians(angle));
 		bullet.dy = bulletSpeed * Math.sin(degreesToRadians(angle));

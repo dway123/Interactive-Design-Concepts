@@ -1,7 +1,7 @@
-function Ball(origx, origy, ctx, rds, clr){
+function Ball(origx, origy, ctx, rds, options){
 	const maxSpeed = 10;
 	const context = ctx;
-	this.color = clr;
+	this.color = options.color || "gray";
 
 	this.radius = rds;
 

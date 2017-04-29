@@ -20,8 +20,8 @@ function Game(){
 		//canvas setup
 		canvas = document.getElementById("canvas");
 		context = canvas.getContext("2d");
-		context.canvas.width  = window.innerWidth;
-		context.canvas.height = window.innerHeight;
+		context.canvas.width  = window.innerWidth * .9;
+		context.canvas.height = window.innerHeight * .9;
 
 		//background music setup
 		backgroundMusic = new Audio("audio/music.mp3");
@@ -48,7 +48,7 @@ function Game(){
 			ccw: 69,	//e
 			shoot: 32	//space
 		}
-		var p1 = new Player(canvas.width*1/4, canvas.height/2, context, 0, {color: "red", keyMap: p1Controls});
+		var p1 = new Player(canvas.width*1/4, canvas.height*1/4, context, 1, {color: "red", keyMap: p1Controls});
 		var p2Controls = {
 			left: 37,	//arrow keys (on numpad)
 			right: 39, 	
@@ -58,14 +58,16 @@ function Game(){
 			ccw: 33,	//pgup
 			shoot: 40	//down arrow 
 		}
-		var p2 = new Player(canvas.width*3/4, canvas.height/2, context, 1, {color: "blue", keyMap: p2Controls});
+		var p2 = new Player(canvas.width*1/4, canvas.height*3/4, context, 2, {color: "blue", keyMap: p2Controls});
+
+		var p3 = new NPC(canvas.width*3/4, canvas.height*1/4, context, 3, {color: "black"});
+		var p4 = new NPC(canvas.width*3/4, canvas.height*3/4, context, 4, {color: "green"});
+
 		players.push(p1);
 		players.push(p2);
+		players.push(p3);
+		players.push(p4);
 		text = new Text(context);
-
-		for(var i = 0; i < players.length; i++){
-			dbListenerSetup(i);
-		}
 	  	
 		//begin rendering
 		render();
@@ -96,9 +98,9 @@ function Game(){
 						var r2 = otherBullets[k].radius;
 						var rsq = (r1 + r2) * (r1 + r2);
 						if(rsq >= dr2){
-							players[i].die();
+							players[i].lives--;
 							players[j].bullets.removeBulletById(k);
-							if(players[i].getLives() <= 0){
+							if(players[i].lives <= 0){
 								players.splice(i, 1);		//player hit!!!	
 							}
 						}
@@ -120,12 +122,14 @@ function Game(){
 			players[i].render();
 		}
 
-		if(players[0]){
-			text.drawMiddleTop("Red Player lives: " + players[0].getLives());
-		}
-		if(players[1]){
-			text.drawMiddleBottom("Blue Player lives: " + players[1].getLives());	
-		}	 	
+		players.forEach(function(player){
+			if(player.id === 1){
+				text.drawMiddleTop("Red Player lives: " + player.lives);
+			}
+			if(player.id === 2){
+				text.drawMiddleBottom("Blue Player lives: " + player.lives);
+			}
+		})	
 
 		requestAnimationFrame(render)
 	}
