@@ -20,7 +20,7 @@ function Game(){
 		//canvas setup
 		canvas = document.getElementById("canvas");
 		context = canvas.getContext("2d");
-		context.canvas.width  = window.innerWidth * .9;
+		context.canvas.width = window.innerWidth * .9;
 		context.canvas.height = window.innerHeight * .9;
 
 		//background music setup

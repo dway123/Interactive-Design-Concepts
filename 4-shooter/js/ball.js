@@ -1,5 +1,4 @@
 function Ball(origx, origy, ctx, rds, options){
-	const maxSpeed = 10;
 	const context = ctx;
 	this.color = options.color || "gray";
 
@@ -14,7 +13,7 @@ function Ball(origx, origy, ctx, rds, options){
 		//wall collision detection
 	    const wallOffset = {
 	    	x: 0,
-	    	y: maxSpeed/2
+	    	y: 5
 	    }
 
 	    if(this.x + this.dx - this.radius < 0 + wallOffset.x){						//left wall
