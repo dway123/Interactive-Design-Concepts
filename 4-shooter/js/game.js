@@ -68,6 +68,9 @@ function Game(){
 		players.push(p3);
 		players.push(p4);
 		text = new Text(context);
+
+		dbListenerSetup(0);
+		dbListenerSetup(1);
 	  	
 		//begin rendering
 		render();
