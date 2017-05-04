@@ -7,6 +7,7 @@ function Character(origX, origY, ctx, id, options){
 	
 	this.lives = 3;
 	this.context = ctx;
+	this.dbRef = firebase.database().ref('players/' + this.id);
 }
 
 Character.prototype.render = function(){

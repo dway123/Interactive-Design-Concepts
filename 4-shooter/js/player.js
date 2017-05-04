@@ -3,7 +3,6 @@ function Player(origX, origY, ctx, id, options){
 
 	this.turret = new Turret(ctx, {});
 	this.keyMap = options.keyMap;
-	this.dbRef = firebase.database().ref('players/' + this.id);
 }
 
 Player.prototype = Object.create(Character.prototype);
